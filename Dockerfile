@@ -56,3 +56,18 @@ RUN apk add --no-cache \
 
 COPY --from=build /module /module
 COPY --from=build /usr/local/bin/sops /usr/local/bin/sops
+COPY scripts /module/scripts
+
+RUN mkdir -p /__w/_temp/_runner_file_commands /github/workspace /github/home /builds /cache && \
+    chmod 777 /__w/_temp/_runner_file_commands /github/workspace /github/home /builds /cache
+
+RUN addgroup ci && adduser -D -h /module/ -s /bin/bash -G ci ci && \
+    chown ci:ci -R /module && \
+    chmod 754 /module/scripts/* && \
+    chmod +x /usr/local/bin/sops
+
+ENV PATH=/module/venv/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /module/scripts
